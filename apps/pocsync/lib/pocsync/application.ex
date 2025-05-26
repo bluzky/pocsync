@@ -5,6 +5,8 @@ defmodule Pocsync.Application do
 
   use Application
 
+  @integrations [Pocsync.Integration.Shopee, Pocsync.Integration.Oms, Pocsync.Integration.Builtin]
+
   @impl true
   def start(_type, _args) do
     children = [
@@ -12,11 +14,28 @@ defmodule Pocsync.Application do
       {DNSCluster, query: Application.get_env(:pocsync, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Pocsync.PubSub},
       # Start the Finch HTTP client for sending emails
-      {Finch, name: Pocsync.Finch}
+      {Finch, name: Pocsync.Finch},
+      {AutomationPlatform.IntegrationRegistry, integrations: collect_integrations()}
       # Start a worker by calling: Pocsync.Worker.start_link(arg)
       # {Pocsync.Worker, arg}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Pocsync.Supervisor)
+  end
+
+  defp collect_integrations do
+    Enum.into(@integrations, %{}, fn module ->
+      definition = module.definition()
+
+      {definition.name,
+       %{
+         name: definition.name,
+         description: definition.description,
+         actions:
+           Enum.into(definition.actions, %{}, fn action ->
+             {action.name, action}
+           end)
+       }}
+    end)
   end
 end
