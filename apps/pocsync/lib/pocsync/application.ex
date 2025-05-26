@@ -15,7 +15,8 @@ defmodule Pocsync.Application do
       {Phoenix.PubSub, name: Pocsync.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Pocsync.Finch},
-      {AutomationPlatform.IntegrationRegistry, integrations: collect_integrations()}
+      {AutomationPlatform.IntegrationRegistry, integrations: collect_integrations()},
+      Pocsync.RMQPublisher
       # Start a worker by calling: Pocsync.Worker.start_link(arg)
       # {Pocsync.Worker, arg}
     ]

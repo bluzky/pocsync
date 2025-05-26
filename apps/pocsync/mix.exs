@@ -43,6 +43,7 @@ defmodule Pocsync.MixProject do
       {:jason, "~> 1.2"},
       {:swoosh, "~> 1.5"},
       {:finch, "~> 0.13"},
+      {:amqp, "~> 3.3"},
       {:pipecore, in_umbrella: true},
       {:pipeman, in_umbrella: true}
     ]

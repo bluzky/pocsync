@@ -2,6 +2,7 @@ defmodule AutomationPlatform.Pipeline do
   @moduledoc """
   Represents a complete automation pipeline with ordered steps
   """
+  @derive Jason.Encoder
 
   defstruct [
     :id,
@@ -111,12 +112,30 @@ defmodule AutomationPlatform.Pipeline do
   defp generate_id do
     :crypto.strong_rand_bytes(16) |> Base.encode64() |> binary_part(0, 16)
   end
+
+  def encode(%__MODULE__{} = pipeline) do
+    Jason.encode!(pipeline)
+  end
+
+  def decode(data) do
+    %__MODULE__{
+      id: Map.get(data, "id"),
+      name: Map.get(data, "name"),
+      description: Map.get(data, "description"),
+      steps: Enum.map(Map.get(data, "steps", []), &AutomationPlatform.Step.decode/1),
+      status: String.to_existing_atom(Map.get(data, "status", "draft")),
+      created_at: DateTime.from_iso8601(Map.get(data, "created_at")),
+      updated_at: DateTime.from_iso8601(Map.get(data, "updated_at"))
+    }
+  end
 end
 
 defmodule AutomationPlatform.Step do
   @moduledoc """
   Represents a single step/node in a pipeline with integration-based actions
   """
+
+  @derive Jason.Encoder
 
   defstruct [
     :id,
@@ -203,5 +222,17 @@ defmodule AutomationPlatform.Step do
 
   defp generate_id do
     :crypto.strong_rand_bytes(16) |> Base.encode64() |> binary_part(0, 16)
+  end
+
+  def decode(map) do
+    %__MODULE__{
+      id: Map.get(map, "id"),
+      name: Map.get(map, "name"),
+      type: String.to_existing_atom(Map.get(map, "type", "action")),
+      integration_name: Map.get(map, "integration_name"),
+      action_name: Map.get(map, "action_name"),
+      input_map: Map.get(map, "input_map", %{}),
+      position: Map.get(map, "position", 0)
+    }
   end
 end
