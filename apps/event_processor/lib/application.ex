@@ -8,7 +8,8 @@ defmodule EventProcessor.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      EventProcessor.PipelineConsumer
+      EventProcessor.PipelineConsumer,
+      EventProcessor.EventConsumer
       # Start a worker by calling: Pocsync.Worker.start_link(arg)
       # {Pocsync.Worker, arg}
     ]

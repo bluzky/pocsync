@@ -55,3 +55,35 @@ message = %{
 # result = PipelineExecutor.execute(pipeline, %{user_id: 123, user_name: "John Doe"})
 
 # IO.inspect(result, label: "Pipeline Execution Result")
+
+event_messages = [
+  %{
+    source: "webhook",
+    path: "/webhook/shopee",
+    headers: %{
+      "Content-Type" => "application/json",
+      "User-Agent" => "Pocsync/1.0"
+    },
+    params: %{
+      "shop_id" => "123",
+      "order_id" => "12345",
+      "status" => "created"
+    }
+  },
+  %{
+    source: "webhook",
+    path: "/api/oms/order",
+    headers: %{
+      "Content-Type" => "application/json",
+      "User-Agent" => "Pocsync/1.0"
+    },
+    params: %{
+      "event" => "order_confirm_packed",
+      "shop_id" => "123",
+      "order_id" => "12345",
+      "order_no" => "ORD12345"
+    }
+  }
+]
+
+# Pocsync.RMQPublisher.send_messages("inn_event_queue", event_messages)

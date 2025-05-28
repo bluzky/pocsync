@@ -11,20 +11,20 @@ defmodule DataMatcher do
 
   ## Examples
 
-      iex> DataMatcher.match(1, 1)
+      iex> DataMatcher.match?(1, 1)
       true
 
-      iex> DataMatcher.match("dev-octosell", "*-octosell")
+      iex> DataMatcher.match?("dev-octosell", "*-octosell")
       true
 
-      iex> DataMatcher.match(%{name: "me", age: 15}, %{name: "me"})
+      iex> DataMatcher.match?(%{name: "me", age: 15}, %{name: "me"})
       true
 
-      iex> DataMatcher.match(["js", "elixir"], DataMatcher.any("elixir"))
+      iex> DataMatcher.match?(["js", "elixir"], DataMatcher.any("elixir"))
       true
   """
-  @spec match(any(), any()) :: boolean()
-  def match(data, pattern) do
+  @spec match?(any(), any()) :: boolean()
+  def match?(data, pattern) do
     do_match(data, pattern)
   end
 
@@ -33,38 +33,38 @@ defmodule DataMatcher do
 
   ## Examples
 
-      iex> DataMatcher.match([1, 2, 3], DataMatcher.any(2))
+      iex> DataMatcher.match?([1, 2, 3], DataMatcher.any(2))
       true
 
-      iex> DataMatcher.match([], DataMatcher.any(1))
+      iex> DataMatcher.match?([], DataMatcher.any(1))
       false
   """
   @spec any(any()) :: {:quantifier, :any, any()}
   def any(pattern), do: {:quantifier, :any, pattern}
 
   @doc """
-  Creates a quantifier pattern that matches if all items in a list match the pattern.
+  Creates a quantifier pattern that matches if all items in a list match? the pattern.
 
   ## Examples
 
-      iex> DataMatcher.match([1, 1, 1], DataMatcher.all(1))
+      iex> DataMatcher.match?([1, 1, 1], DataMatcher.all(1))
       true
 
-      iex> DataMatcher.match([], DataMatcher.all(1))
+      iex> DataMatcher.match?([], DataMatcher.all(1))
       true
   """
   @spec all(any()) :: {:quantifier, :all, any()}
   def all(pattern), do: {:quantifier, :all, pattern}
 
   @doc """
-  Creates a quantifier pattern that matches if no items in a list match the pattern.
+  Creates a quantifier pattern that matches if no items in a list match? the pattern.
 
   ## Examples
 
-      iex> DataMatcher.match([1, 2, 3], DataMatcher.none(4))
+      iex> DataMatcher.match?([1, 2, 3], DataMatcher.none(4))
       true
 
-      iex> DataMatcher.match([], DataMatcher.none(1))
+      iex> DataMatcher.match?([], DataMatcher.none(1))
       true
   """
   @spec none(any()) :: {:quantifier, :none, any()}
@@ -219,7 +219,7 @@ defmodule DataMatcher do
 
       :all ->
         case data do
-          # vacuous truth - empty list means all elements match
+          # vacuous truth - empty list means all elements match?
           [] -> true
           _ -> Enum.all?(data, &do_match(&1, pattern))
         end
@@ -260,7 +260,7 @@ defmodule DataMatcher do
     if String.contains?(pattern, ["*", "?"]) do
       match_string_pattern(data, pattern)
     else
-      # Exact string match
+      # Exact string match?
       data == pattern
     end
   end
@@ -276,7 +276,7 @@ defmodule DataMatcher do
       |> String.replace("\\*", ".*")
       |> String.replace("\\?", ".")
 
-    # Create regex with anchors to match entire string
+    # Create regex with anchors to match? entire string
     case Regex.compile("^#{regex_pattern}$") do
       {:ok, regex} -> Regex.match?(regex, data)
       {:error, _} -> false

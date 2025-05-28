@@ -12,7 +12,10 @@ defmodule DemoPipelines do
     config = %{
       name: "Shopee create order pipeline",
       description: "User-defined automation workflow",
-      pattern: %{},
+      pattern: %{
+        "source" => "webhook",
+        "path" => "/webhook/shopee"
+      },
       steps: [
         %{
           name: "Order created Webhook Receiver",
@@ -44,14 +47,20 @@ defmodule DemoPipelines do
     }
 
     {:ok, validated_config} = PipelineBuilder.validate_config(config)
-    pipeline = PipelineBuilder.from_config(validated_config)
+    PipelineBuilder.from_config(validated_config)
   end
 
   def shopee_confim_pack_pipeline() do
     config = %{
       name: "Shopee confirm pack order pipeline",
       description: "Shopee confirm pack order pipeline",
-      pattern: %{},
+      pattern: %{
+        "source" => "webhook",
+        "path" => "/api/oms/order",
+        "params" => %{
+          "event" => "order_confirm_packed"
+        }
+      },
       steps: [
         %{
           name: "Order confirm packed Webhook Receiver",
@@ -83,6 +92,6 @@ defmodule DemoPipelines do
     }
 
     {:ok, validated_config} = PipelineBuilder.validate_config(config)
-    pipeline = PipelineBuilder.from_config(validated_config)
+    PipelineBuilder.from_config(validated_config)
   end
 end

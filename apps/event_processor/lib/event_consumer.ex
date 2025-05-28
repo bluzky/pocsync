@@ -54,13 +54,9 @@ defmodule EventProcessor.EventConsumer do
   end
 
   defp match_pipeline_event(event) do
-    list_pipelines()
+    DemoPipelines.all()
     |> Enum.filter(fn pipeline ->
       DataMatcher.match?(event, pipeline.pattern)
     end)
-  end
-
-  defp list_pipelines() do
-    AutomationPlatform.Pipeline.list_pipelines()
   end
 end
