@@ -9,7 +9,7 @@ defmodule EventProcessor.PipelineConsumer do
       producer: [
         module:
           {BroadwayRabbitMQ.Producer,
-           queue: "inn_pipeline_queue",
+           queue: System.get_env("RABBIT_PIPELINE_QUEUE", "inn_pipeline_queue"),
            connection: [
              host: "localhost",
              port: 5672,
@@ -28,6 +28,7 @@ defmodule EventProcessor.PipelineConsumer do
 
   @impl true
   def handle_message(_, message, _) do
+    Logger.info("Received pipeline message: #{message.data}")
     # Your message processing logic here
     case Jason.decode(message.data) do
       {:ok,

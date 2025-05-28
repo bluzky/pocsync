@@ -9,7 +9,7 @@ defmodule EventProcessor.EventConsumer do
       producer: [
         module:
           {BroadwayRabbitMQ.Producer,
-           queue: "inn_event_queue",
+           queue: System.get_env("RABBIT_EVENT_QUEUE", "inn_event_queue"),
            connection: [
              host: "localhost",
              port: 5672,
@@ -27,12 +27,24 @@ defmodule EventProcessor.EventConsumer do
 
   @impl true
   def handle_message(_, message, _) do
-    Logger.info("Received message: #{message.data}")
+    Logger.info("Received event message: #{message.data}")
 
     # Your message processing logic here
     case Jason.decode(message.data) do
       {:ok, event} ->
-        process_event(event)
+        # find all matched pipelines for the event
+        messages =
+          match_pipeline_event(event)
+          |> Enum.map(fn pipeline ->
+            %{
+              pipeline: pipeline,
+              context: event
+            }
+          end)
+
+        # enqueue the matched pipelines for processing
+        Pocsync.RMQPublisher.send_messages("inn_pipeline_queue", messages)
+
         message
 
       {:error, reason} ->
@@ -41,17 +53,14 @@ defmodule EventProcessor.EventConsumer do
     end
   end
 
-  defp process_event(%{"type" => "user_created", "data" => user_data}) do
-    Logger.info("Processing user created event: #{inspect(user_data)}")
-    # Handle user creation logic
+  defp match_pipeline_event(event) do
+    list_pipelines()
+    |> Enum.filter(fn pipeline ->
+      DataMatcher.match?(event, pipeline.pattern)
+    end)
   end
 
-  defp process_event(%{"type" => "order_placed", "data" => order_data}) do
-    Logger.info("Processing order placed event: #{inspect(order_data)}")
-    # Handle order placement logic
-  end
-
-  defp process_event(event) do
-    Logger.warn("Unknown event type: #{inspect(event)}")
+  defp list_pipelines() do
+    AutomationPlatform.Pipeline.list_pipelines()
   end
 end

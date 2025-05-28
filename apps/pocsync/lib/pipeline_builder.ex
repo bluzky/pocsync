@@ -41,7 +41,7 @@ defmodule Pocsync.PipelineBuilder do
   }
   """
   def from_config(config) do
-    pipeline = Pipeline.new(config.name, config[:description])
+    pipeline = Pipeline.new(config.name, config[:description], config[:pattern])
 
     steps =
       config.steps

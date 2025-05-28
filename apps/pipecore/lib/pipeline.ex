@@ -8,6 +8,7 @@ defmodule AutomationPlatform.Pipeline do
     :id,
     :name,
     :description,
+    :pattern,
     :steps,
     :status,
     :created_at,
@@ -18,6 +19,7 @@ defmodule AutomationPlatform.Pipeline do
           id: String.t() | nil,
           name: String.t(),
           description: String.t() | nil,
+          pattern: map() | nil,
           steps: [AutomationPlatform.Step.t()],
           status: :active | :inactive | :draft,
           created_at: DateTime.t() | nil,
@@ -27,11 +29,12 @@ defmodule AutomationPlatform.Pipeline do
   @doc """
   Creates a new pipeline with default values
   """
-  def new(name, description \\ nil) do
+  def new(name, description \\ nil, pattern \\ nil) do
     %__MODULE__{
       id: generate_id(),
       name: name,
       description: description,
+      pattern: pattern,
       steps: [],
       status: :draft,
       created_at: DateTime.utc_now(),
