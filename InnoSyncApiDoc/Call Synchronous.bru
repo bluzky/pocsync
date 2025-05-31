@@ -1,0 +1,20 @@
+meta {
+  name: Call Synchronous
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{endpoint}}/api/call/oms/order/confirm_packed
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "provider": "shopee",
+    "shop_id": "123",
+    "order_no": "SPE110",
+    "package_no": "DWL29341"
+  }
+}

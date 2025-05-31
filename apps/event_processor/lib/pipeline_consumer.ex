@@ -9,7 +9,7 @@ defmodule EventProcessor.PipelineConsumer do
       producer: [
         module:
           {BroadwayRabbitMQ.Producer,
-           queue: System.get_env("RABBIT_PIPELINE_QUEUE", "inn_pipeline_queue"),
+           queue: System.get_env("RABBIT_PIPELINE_QUEUE", "default_pipeline_queue"),
            connection: [
              host: "localhost",
              port: 5672,

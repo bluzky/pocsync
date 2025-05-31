@@ -7,6 +7,11 @@ defmodule PocsyncWeb.Router do
 
   scope "/api", PocsyncWeb do
     pipe_through :api
+
+    get "/webhook/:app_id/*path", WebhookController, :handle
+    post "/webhook/:app_id/*path", WebhookController, :handle
+    get "/call/:app_id/*path", CallController, :handle
+    post "/call/:app_id/*path", CallController, :handle
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

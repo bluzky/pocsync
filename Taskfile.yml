@@ -1,0 +1,16 @@
+# https://taskfile.dev
+
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  api:
+    cmds:
+      - cd apps/pocsync_web && iex -S mix phx.server
+  processor:
+    cmds:
+      - cd apps/event_processor && iex -S mix
+  runner:
+    cmds:
+      - cd apps/pipeline_runner && iex -S mix

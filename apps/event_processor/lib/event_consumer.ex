@@ -16,6 +16,7 @@ defmodule EventProcessor.EventConsumer do
              username: "guest",
              password: "guest"
            ],
+           on_failure: :ack,
            qos: [prefetch_count: 50]},
         concurrency: 1
       ],
@@ -42,8 +43,15 @@ defmodule EventProcessor.EventConsumer do
             }
           end)
 
-        # enqueue the matched pipelines for processing
-        Pocsync.RMQPublisher.send_messages("inn_pipeline_queue", messages)
+        case MessageRouter.match(event) do
+          {:ok, queue} ->
+            # enqueue the matched pipelines for processing
+            Logger.info("Matched queue: #{queue}")
+            Pocsync.RMQPublisher.send_messages(queue, messages)
+
+          {:error, _message} ->
+            Logger.error("No matching pipeline found for event: #{inspect(event)}")
+        end
 
         message
 
