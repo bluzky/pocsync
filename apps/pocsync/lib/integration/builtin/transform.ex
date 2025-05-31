@@ -90,17 +90,18 @@ defmodule Pocsync.Builtin.Transform do
     field_mapping = input_data["mapping"] || input_data[:mapping] || %{}
     source_data = input_data["pipeline_data"] || input_data[:pipeline_data] || input_data
 
-    Logger.debug("Mapping fields",
-      mapping: field_mapping,
-      source_keys: Map.keys(source_data || %{})
+    Logger.debug(
+      inspect(
+        {"Mapping fields", mapping: field_mapping, source_keys: Map.keys(source_data || %{})}
+      )
     )
 
     mapped =
       case source_data do
         %{} when is_map(source_data) ->
           Enum.reduce(field_mapping, %{}, fn {source_field, target_field}, acc ->
-            value =
-              Map.get(source_data, source_field) || Map.get(source_data, to_string(source_field))
+            path = String.split(source_field, ".")
+            value = Nested.get(source_data, path)
 
             if value, do: Map.put(acc, target_field, value), else: acc
           end)

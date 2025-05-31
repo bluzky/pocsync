@@ -68,19 +68,21 @@ defmodule AutomationPlatform.StepExecutor do
     # Append input_data to the arguments list
     args = base_args ++ [input_data]
 
-    Logger.debug("Invoking action executor",
-      step_id: step.id,
-      module: module,
-      function: function,
-      args_count: length(args)
+    Logger.debug(
+      inspect(
+        {"Invoking action executor",
+         step_id: step.id, module: module, function: function, args_count: length(args)}
+      )
     )
 
     try do
       case apply(module, function, args) do
         {:ok, result} ->
-          Logger.debug("Step execution successful",
-            step_id: step.id,
-            result_keys: Map.keys(result || %{})
+          Logger.debug(
+            inspect(
+              {"Step execution successful",
+               step_id: step.id, result_keys: Map.keys(result || %{})}
+            )
           )
 
           {:ok,
@@ -96,9 +98,11 @@ defmodule AutomationPlatform.StepExecutor do
            }}
 
         {:error, reason} ->
-          Logger.warning("Step execution failed",
-            step_id: step.id,
-            reason: inspect(reason)
+          Logger.warning(
+            inspect(
+              {"Step execution failed",
+               step_id: step.id, step_name: step.name, reason: inspect(reason)}
+            )
           )
 
           {:error,

@@ -127,8 +127,18 @@ defmodule DemoPipelines do
           integration_name: "pocsync.builtin",
           action_name: "pocsync.http.request",
           input_map: %{
-            url: "https://my-crm.com/api/users",
-            headers: %{"Authorization" => "Bearer my-token"}
+            "url" => "http://localhost:3000/api/order/confirm_pack",
+            "headers" => %{"Authorization" => "Bearer my-token"},
+            "method" => "POST"
+          }
+        },
+        %{
+          name: "Transform response",
+          type: :action,
+          integration_name: "pocsync.builtin",
+          action_name: "pocsync.transform.map_fields",
+          input_map: %{
+            mapping: %{"body.ship_id" => "tracking_number", "body.package_id" => "package_id"}
           }
         }
       ]

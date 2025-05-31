@@ -41,25 +41,68 @@ defmodule Pocsync.Builtin.HttpRequest do
   def request(input_data) do
     method = input_data["method"] || input_data[:method] || "GET"
     input_data = Map.delete(input_data, "method")
-    url = extract_url(input_data)
+    url = input_data["url"]
+
+    headers = Map.get(input_data, "headers", %{})
+    query = Map.get(input_data, "query", %{})
+    payload = Map.get(input_data, "payload", %{})
 
     Logger.info("Making HTTP #{method} request", url: url)
 
-    case validate_url(url) do
-      :ok ->
-        {:ok,
-         %{
-           status_code: 200,
-           headers: %{
-             "content-type" => "application/json",
-             "x-request-id" => generate_request_id()
-           },
-           body: "atest"
-         }}
+    # Build the request options
+    options = build_request_options(method, headers, query, payload)
 
-      {:error, reason} ->
-        {:error, "Invalid URL: #{reason}"}
-    end
+    # Make the request
+    Req.request([method: method, url: url] ++ options)
+    |> handle_response()
+  rescue
+    error ->
+      {:error, error}
+  end
+
+  # Private function to build request options
+  defp build_request_options(method, headers, query, body) do
+    options = []
+
+    # Add headers if provided
+    options = if map_size(headers) > 0, do: [headers: headers] ++ options, else: options
+
+    # Add query parameters if provided
+    options = if map_size(query) > 0, do: [params: query] ++ options, else: options
+
+    # Add body if provided (for methods that support it)
+    options =
+      if body && method_supports_body?(method) do
+        [body: body] ++ options
+      else
+        options
+      end
+
+    options
+  end
+
+  # Check if HTTP method supports request body
+  defp method_supports_body?(method) when method in [:post, :put, :patch, :delete], do: true
+  defp method_supports_body?(_), do: false
+
+  defp handle_response({:ok, response}) do
+    Logger.info("HTTP request successful", status: response.status)
+
+    {:ok,
+     %{
+       "status" => response.status,
+       "headers" => response.headers,
+       "body" => response.body
+     }}
+  end
+
+  defp handle_response({:error, reason}) do
+    Logger.error("HTTP request failed", reason: inspect(reason))
+
+    {:error,
+     %{
+       "error" => reason
+     }}
   end
 
   @doc """
@@ -93,27 +136,5 @@ defmodule Pocsync.Builtin.HttpRequest do
        trigger_type: "webhook",
        processed_at: DateTime.utc_now()
      }}
-  end
-
-  # Helper functions
-
-  defp extract_url(input_data) do
-    input_data["url"] || input_data[:url] ||
-      input_data["pipeline_data"]["url"] || input_data[:pipeline_data][:url] ||
-      ""
-  end
-
-  defp validate_url(url) when is_binary(url) and byte_size(url) > 0 do
-    if String.starts_with?(url, ["http://", "https://"]) do
-      :ok
-    else
-      {:error, "URL must start with http:// or https://"}
-    end
-  end
-
-  defp validate_url(_), do: {:error, "URL is required and must be a string"}
-
-  defp generate_request_id do
-    :crypto.strong_rand_bytes(8) |> Base.encode16() |> String.downcase()
   end
 end
